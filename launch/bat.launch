@@ -1,0 +1,38 @@
+<launch>
+  	
+  <!-- Start drone driver -->
+  <include file="$(find ardrone_autonomy)/launch/ardrone.launch"/>
+
+  <!-- Publish cameras positions -->
+  <node pkg="tf" type="static_transform_publisher" name="stingray1_tf" args="1.27 0 2.54 -1.57 0 3.14 map stingray1 100" />
+
+  <node pkg="tf" type="static_transform_publisher" name="stingray2_tf" args="-1.27 0 2.54 -1.57 0 3.14 	 map stingray2 100" />
+
+  <node pkg="camera1394" type="camera1394_node" name="stingray1" >
+    <rosparam file="$(find ardrone_bat)/cfg/stingray1.yaml" />
+    <remap from="/camera/image_raw" to="/stingray1/image_raw"/>
+    <remap from="/camera/camera_info" to="/stingray1/camera_info"/>
+  </node>
+
+  <node pkg="camera1394" type="camera1394_node" name="stingray2" >
+    <rosparam file="$(find ardrone_bat)/cfg/stingray2.yaml" />
+    <remap from="/camera/image_raw" to="/stingray2/image_raw"/>
+    <remap from="/camera/camera_info" to="/stingray2/camera_info"/>
+  </node>
+
+
+  <arg name="marker_size" default="13.5" />
+  <arg name="max_new_marker_error" default="0.2" />
+  <arg name="max_track_error" default="0.2" />
+  <arg name="cam_image_topic1" default="/stingray1/image_raw" />
+  <arg name="cam_info_topic1" default="/stingray1/camera_info" />
+  <arg name="output_frame1" default="/stingray1" />
+
+  <node name="ar_track_alvar1" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic1) $(arg cam_info_topic1) $(arg output_frame1)" />
+
+  <arg name="cam_image_topic2" default="/stingray2/image_raw" />
+  <arg name="cam_info_topic2" default="/stingray2/camera_info" />
+  <arg name="output_frame2" default="/stingray2" />
+  <node name="ar_track_alvar2" pkg="ar_track_alvar" type="individualMarkersNoKinect" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic2) $(arg cam_info_topic2) $(arg output_frame2)" />
+
+</launch>

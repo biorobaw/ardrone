@@ -1,0 +1,8 @@
+guid: a4701110abd76
+video_mode: format7_mode0
+roi_width: 780
+roi_height: 580
+frame_id: stingray2
+iso_speed: 400
+camera_info_url: package://ardrone_bat/cfg/stingray2_calibration.yaml
+
