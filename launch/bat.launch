@@ -1,7 +1,11 @@
 <launch>
-  	
+  <arg name="model" default="$(find ardrone_bat)/cfg/drone.urdf"/>
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(arg model)'" />
+  <node pkg="tf" type="static_transform_publisher" name="marker_robot" args="0 0 -.1 0 0 0 ar_marker_0 base_link 100" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
   <!-- Start drone driver -->
-  <include file="$(find ardrone_autonomy)/launch/ardrone.launch"/>
+  <include file="$(find ardrone_bat)/launch/ardrone.launch"/>
 
   <!-- Publish cameras positions -->
   <node pkg="tf" type="static_transform_publisher" name="stingray1_tf" args="1.27 0 2.54 -1.57 0 3.14 map stingray1 100" />

@@ -17,10 +17,12 @@ PROP_LINEAR = .75
 D_LINEAR = 15
 NORM_LIMIT = .1
 THRS_ARRIVED = .1
+THRS_VELS = .005
 
 drone_land = None
 
 prev_diff = None
+hovering = 0
 
 def hover():
   print "Hovering"
@@ -34,8 +36,9 @@ def hover():
   return msg
 
 def goto_point(tx, ty, cx, cy, ct):
-  global prev_diff
+  global prev_diff, hovering
   global TARGET_X
+  global THRS_VELS
   
   #print "Controlling", tx, ty, cx, cy, ct, -0.5*ct,
   msg = geometry_msgs.msg.Twist()
@@ -75,8 +78,14 @@ def goto_point(tx, ty, cx, cy, ct):
   prev_diff = diff
 
   # Change target
-  if np.linalg.norm(diff) < THRS_ARRIVED:
-    TARGET_X = -TARGET_X
+  if np.linalg.norm(diff) < THRS_ARRIVED and hovering == 0:
+    hovering = 55*5
+  
+  if hovering > 0:
+    hovering = hovering - 1
+    if hovering == 0:
+      TARGET_X = -TARGET_X
+    return hover();
 
   return msg
 
