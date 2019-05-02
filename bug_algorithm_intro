@@ -1,0 +1,23 @@
+Using ROS we operate an ARDrone to fly toward a goal, while avoiding obstacles.
+
+There are a few things we must do before testing:
+
+1. Use Linux Ubuntu 16.04
+    - you can either dual install it along side your own operating system or use a computer with it already installed (must have Wireless Internet capability)
+
+2. Install ROS for Ubuntu (http://wiki.ros.org/kinetic/Installation)
+    - follow all steps
+    
+3. Download all files used for the program (drone.launch and fly.py)
+    
+4. Connect to the ROS node from computer
+    - this may require you to change hostname to an IP address (e.g. 192.168.1.2)
+
+5. On a terminal run command 'roscore' (no quotations)
+    - this will connect you to the ROS master node
+
+6. On a seperate terminal and in the workspace of drone.launch run command 'roslaunch drone.launch'
+    - lets the drone know what packages to use
+
+7. On a third terminal and in the workspace of fly.py, run 'python fly.py'
+    - Observe
