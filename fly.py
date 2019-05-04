@@ -17,8 +17,8 @@ import numpy as np
 map_frame = 'map'
 marker_frame = 'ar_marker_0'
 MAX_BLACKOUT = 2
-TARGET_X = -1.27
-TARGET_Y = 0
+TARobst_x = -1.27
+TARobst_y = 0
 PROP_LINEAR = .75
 D_LINEAR = 15
 NORM_LIMIT = .1
@@ -30,25 +30,25 @@ drone_land = None
 prev_diff = None
 hovering = 0
 
-get_x = 320
-get_y = 180
-close = 1000
-obst_x = 960
-obst_y = 540
-obst_size = 10
+obst_x = 320
+obst_y = 180
+obst_size = 1000
+goal_x = 960
+goal_y = 540
+goal_size = 10
 
 bridge = CvBridge()
 
 img = Image()
 
 def hover():
-  #print(get_x)
-  global get_x
-  global get_y
-  global close
+
   global obst_x
   global obst_y
   global obst_size
+  global goal_x
+  global goal_y
+  global goal_size
   msg = geometry_msgs.msg.Twist()
   msg.linear.x = 0
   msg.linear.y = 0
@@ -56,38 +56,36 @@ def hover():
   msg.angular.x = 0
   msg.angular.y = 0
   msg.angular.z = 0
-  """if (close > 13000 and get_x >= 320 and get_x < 641):
-    print("strafe left")
+  if (obst_size > 13000 and obst_x >= 320 and obst_x < 641):
     msg.linear.y = 0.075
     msg.angular.z = -0.1
-    close = 10
-  elif (close > 13000 and get_x < 320):
-    print("strafe right")
+    obst_size = 10
+  elif (obst_size > 13000 and obst_x < 320):
     msg.linear.y = -0.075
     msg.angular.z = 0.2
-    close = 10
-  elif close <= 13000:"""
-  if (obst_x >= 255 and obst_x <= 385):
+    obst_size = 10
+  elif obst_size <= 13000:
+  if (goal_x >= 255 and goal_x <= 385):
     msg.angular.z = 0
-  elif obst_x > 385:
+  elif goal_x > 385:
     msg.angular.z = -0.2
-  elif obst_x < 255:
+  elif goal_x < 255:
     msg.angular.z = 0.2
-  """if (obst_y >= 140 and obst_y <= 220):
+  if (goal_y >= 140 and goal_y <= 220):
     msg.linear.z = 0
-  elif obst_y > 220:
+  elif goal_y > 220:
     msg.linear.z = -0.2
-  elif obst_y < 140:
-    msg.linear.z = 0.2"""
-  if (obst_size >= 5000 and obst_size <= 4000):
+  elif goal_y < 140:
+    msg.linear.z = 0.2
+  if (goal_size >= 5000 and goal_size <= 4000):
     msg.linear.x = 0
     drone_land.publish(Empty())
     exit()
-  elif obst_size > 5000:
+  elif goal_size > 5000:
     msg.linear.x = 0
     drone_land.publish(Empty())
     exit()
-  elif obst_size < 4000:
+  elif goal_size < 4000:
     msg.linear.x = 0.02
   return msg
 
@@ -110,9 +108,9 @@ def draw_contours(image, contours, image_name):
 
 
 def process_contours(binary_image, rgb_image, contours):
-  global get_x
-  global get_y
-  global close
+  global obst_x
+  global obst_y
+  global obst_size
 
   black_image = np.zeros([binary_image.shape[0], binary_image.shape[1], 3], 'uint8')
 
@@ -121,26 +119,22 @@ def process_contours(binary_image, rgb_image, contours):
     perimeter = cv2.arcLength(i, True)
     ((x, y), radius) = cv2.minEnclosingCircle(i)
     if (area > 50):
-      #cv2.drawContours(rgb_image, [i], -1, (150, 250, 150), 1)
       cv2. drawContours(black_image, [i], -1, (150, 250, 150), 1)
       cx, cy = get_contour_center(i)
-      #cv2.circle(rgb_image, (cx, cy), (int)(radius),(0, 0, 255), 1)
       cv2.circle(black_image, (cx, cy), (int)(radius), (0, 0, 255), 1)
       drone_vel = rospy.Publisher('/cmd_vel', geometry_msgs.msg.Twist, queue_size=1)
       msg = geometry_msgs.msg.Twist()
-      get_x = cx
-      get_y = cy
-      close = area
+      obst_x = cx
+      obst_y = cy
+      obst_size = area
       #print("Area: {}, Perimeter: {}".format(area, perimeter))
-  #print("Number of Contours: {}".format(len(contours)))
-  #cv2.imshow("RGB Image Contours", rgb_image)
   cv2.imshow("Black Image Contours", black_image)
 
 
 def process_contours2(binary_image, rgb_image, contours):
-  global obst_x
-  global obst_y
-  global obst_size
+  global goal_x
+  global goal_y
+  global goal_size
 
   black_image2 = np.zeros([binary_image.shape[0], binary_image.shape[1], 3], 'uint8')
 
@@ -149,19 +143,15 @@ def process_contours2(binary_image, rgb_image, contours):
     perimeter = cv2.arcLength(i, True)
     ((x, y), radius) = cv2.minEnclosingCircle(i)
     if (area > 50):
-      #cv2.drawContours(rgb_image, [i], -1, (150, 250, 150), 1)
       cv2. drawContours(black_image2, [i], -1, (150, 250, 150), 1)
       cx, cy = get_contour_center(i)
-      #cv2.circle(rgb_image, (cx, cy), (int)(radius),(0, 0, 255), 1)
       cv2.circle(black_image2, (cx, cy), (int)(radius), (0, 0, 255), 1)
       drone_vel = rospy.Publisher('/cmd_vel', geometry_msgs.msg.Twist, queue_size=1)
       msg = geometry_msgs.msg.Twist()
-      obst_x = cx
-      obst_y = cy
-      obst_size = area
+      goal_x = cx
+      goal_y = cy
+      goal_size = area
       #print("Area: {}, Perimeter: {}".format(area, perimeter))
-  #print("Number of Contours: {}".format(len(contours)))
-  #cv2.imshow("RGB Image Contours", rgb_image)
   cv2.imshow("Black Image Contours2", black_image2)
 
 
@@ -179,8 +169,6 @@ def get_contour_center(contour):
 def filter_color(rgb_image, lower_bound_color, upper_bound_color):
 
   hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
-  pinklower = (100, 100, 100)
-  pinkupper = (180, 200, 200)
 
   mask = cv2.inRange(hsv_image, lower_bound_color, upper_bound_color)
   return mask
@@ -189,18 +177,15 @@ def filter_color(rgb_image, lower_bound_color, upper_bound_color):
 
 def image_callback(ros_image):
 
-  #print("got an image")
   global bridge
   try:
-    obst_lower = (90, 90, 200)
-    obst_upper = (180, 255, 255)
-    goal_lower = (10, 110, 100)  #fishfood
-    goal_upper = (100, 255, 255) #fishfood
-    #pinklower = (20, 20, 10)
-    #pinkupper = (180, 255, 255)
+    goal_l = (90, 90, 200)
+    goal_u = (180, 255, 255)
+    obst_l = (10, 110, 100)
+    obst_u = (100, 255, 255)
     cv_image = bridge.imgmsg_to_cv2(ros_image, "bgr8")
-    binary_image_mask = filter_color(cv_image, goal_lower, goal_upper)
-    binary_image_mask2 = filter_color(cv_image, obst_lower, obst_upper)
+    binary_image_mask = filter_color(cv_image, obst_l, obst_u)
+    binary_image_mask2 = filter_color(cv_image, goal_l, goal_u)
     contours = getContours(binary_image_mask)
     contours2 = getContours(binary_image_mask2)
     process_contours(binary_image_mask, cv_image, contours)
@@ -233,30 +218,21 @@ if __name__ == "__main__":
 
   # Take off
   print "Taking off"
-  """drone_takeoff.publish(Empty())
-  msg2 = geometry_msgs.msg.Twist()
-  msg2.linear.x = 0
-  msg2.linear.y = 0
-  msg2.linear.z = 0
-  msg2.angular.x = 0
-  msg2.angular.y = 0
-  msg2.angular.z = 0
-  drone_vel.publish(msg2)
-  time.sleep(3.5)"""
+  drone_takeoff.publish(Empty())
 
-  runescape = 0
+  move = 0
 
-  while runescape < 70:
-    #msg = hover()
-    #drone_vel.publish(msg)
+  while move < 70:
+    msg = hover()
+    drone_vel.publish(msg)
     time.sleep(0.3)
-    runescape = runescape + 1
-    print(runescape)
+    move = move + 1
+    print(move)
 
-  #drone_land.publish(Empty())
+  drone_land.publish(Empty())
   
 
-  #rospy.on_shutdown(land)
+  rospy.on_shutdown(land)
 
 
   # Control loop
